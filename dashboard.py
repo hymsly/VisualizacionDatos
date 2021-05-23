@@ -59,7 +59,25 @@ region_geojson_camas = pd.merge(region_geojson,camas_today_resume,how='left',lef
 region_geojson_camas_2 = pd.merge(region_geojson_camas,macroregiones,how='left',left_on='NOMBDEP', right_on='Departamento')
 print(region_geojson_camas_2.head())
 #-------------------------------------------------------------------------------
+##VACUNACIONES
+poblacion_etario_vacunas = pd.read_csv(join(ruta,'poblacion_etario_vacunas.csv'),sep=',',encoding='latin1')
+poblacion_etario_vacunas.sort_values('grupo_etario',inplace=True)
+fig_vacuna_etario = px.bar(poblacion_etario_vacunas, x="grupo_etario",
+                            y=["ambas_dosis", "solo_dosis_1", "ninguna_dosis"], title="Vacunacion por grupo etario",
+                            labels={
+                                "grupo_etario" : "Rango de edad",
+                                "y":"Poblacion"
+                            })
 
+vacunas_timeline = pd.read_csv(join(ruta,'vacunas_timeline.csv'),sep=',',encoding='latin1')
+vacunas_timeline['DOSIS'] = vacunas_timeline['DOSIS'].apply(str)
+fig_vacunas_timeline = px.bar(vacunas_timeline, x="FECHA_VACUNACION_dt", y="UUID", color="DOSIS",
+                            title="Aplicacion de Vacunas por Dosis",
+                            labels={
+                                "FECHA_VACUNACION_dt": "Fecha de la vacunacion",
+                                "UUID": "Dosis aplicadas"
+                            })
+#-------------------------------------------------------------------------------
 # App layout
 app.layout = html.Div([
     ##El titulo
@@ -97,6 +115,11 @@ app.layout = html.Div([
                       ),
           ]
       ),
+    
+    dbc.Row(dbc.Col(html.H1("Situacion Ocupacional Hospitalaria - Fuente SUSALUD"),
+                        width={'size': 8, 'offset': 2},
+                    ),
+            ),
     #El Dropdown 2
     dbc.Row(dbc.Col(dcc.Dropdown(id="slct_year2",
                  options=[
@@ -129,6 +152,16 @@ app.layout = html.Div([
             dbc.Col(dcc.Graph(id='gauge_ocupacion_HOSP', figure={}),
                     lg={'size': 4,  "offset": 1, 'order': 'last'}
                       ),
+          ]
+      ),
+    dbc.Row(dbc.Col(html.H1("Vacunacion"),
+                        width={'size': 4, 'offset': 4},
+                    ),
+            ),
+    dbc.Row(
+          [
+            dbc.Col(dcc.Graph(figure=fig_vacunas_timeline),width=8),
+            dbc.Col(dcc.Graph(figure=fig_vacuna_etario),width=4)
           ]
       ),
 ])
@@ -178,7 +211,7 @@ def update_graph(option_slctd):
     fig_week.update_geos(fitbounds="locations", visible=False)
 
     fig_week.update_layout(
-         title_text="Exceso de Fallecidos en la ultima seamana (14/05/2021 - 20/05/2021)"
+         title_text="Exceso de Fallecidos en la ultima semana (14/05/2021 - 20/05/2021)"
      )
     ##TIMELINE DE MUERTES
     dff_line_2 = dff_line[['FECHA','tmp']].groupby(['FECHA']).sum().reset_index().sort_values(by=['FECHA'])
