@@ -12,6 +12,11 @@ import geopandas
 import numpy as np
 from shapely.geometry import Point
 
+import datetime
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as mpe
+
 from os.path import join
 ruta = 'C:\Diplomado_IA_PUCP\Visualizacion_de_datos\proyecto'
 
@@ -78,9 +83,33 @@ fig_vacunas_timeline = px.bar(vacunas_timeline, x="FECHA_VACUNACION_dt", y="UUID
                                 "UUID": "Dosis aplicadas"
                             })
 #-------------------------------------------------------------------------------
+##REPRODUCTION RATE
+owid = pd.read_csv(join(ruta,'owid-covid-data.csv'),sep=',',encoding='latin1',index_col=0)
+owid['date'] = pd.to_datetime(owid['date'])
+#Lista de países
+lista_paises = owid['location'].unique().tolist()
+lista_paises.sort()
+#-------------------------------------------------------------------------------
 # App layout
 app.layout = html.Div([
     ##El titulo
+    dbc.Row(dbc.Col(html.H1("Tasa de Reproduccion - R"),
+                        width={'size': 6, 'offset': 3},
+                    ),
+            ),
+    #El Dropdown
+    dbc.Row(dbc.Col(html.P("Seleccion país(es) para comparar"),lg={'size': 2,  "offset": 1})),
+    dbc.Row(
+        [dbc.Col(dcc.Dropdown(id="pais_select",
+                        placeholder='Seleccione país',
+                        options=[{"label": i, "value": i} for i in lista_paises],
+                        multi=True,
+                        value=['Peru']),
+            lg={'size': 2,  "offset": 1}),
+        dbc.Col(dcc.Graph(id='time_serie_owid', figure={}),
+            width=12, lg={'size': 8,  "offset": 0}
+        )
+        ]),
     dbc.Row(dbc.Col(html.H1("Fallecidos - Fuente SINADEF"),
                         width={'size': 6, 'offset': 3},
                     ),
@@ -236,6 +265,7 @@ def update_graph(option_slctd):
         xanchor="left",
         x=0
     ))
+
     return fig_total,fig_week,fig_line
 
 ##Probando otro callback
@@ -314,7 +344,21 @@ def update_graph2(option_slctd):
 
     return fig_UCI,fig_gauge_uci,fig_gauge_hosp,fig_hosp
 
-
+@app.callback(
+    Output("time_serie_owid", "figure"),
+    [Input('pais_select','value')]
+)
+def update_owid(paises_selected):
+    if(len(paises_selected)==0):
+        paises_selected.append('Peru')
+    owid_filter = owid[owid['location'].isin(paises_selected)]
+    fig = px.line(owid_filter,
+                  x="date", 
+                  y='reproduction_rate',
+                  color='location',
+                  labels={'reproduction_rate':'Tasa de Reproduccion - R','date':'fecha'}
+                  )
+    return fig
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run_server(debug=True)
