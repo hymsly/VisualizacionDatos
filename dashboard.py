@@ -17,6 +17,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as mpe
 
+import base64
+
 from os.path import join
 ruta = 'C:\Diplomado_IA_PUCP\Visualizacion_de_datos\proyecto'
 
@@ -89,11 +91,16 @@ owid['date'] = pd.to_datetime(owid['date'])
 #Lista de países
 lista_paises = owid['location'].unique().tolist()
 lista_paises.sort()
+
 #-------------------------------------------------------------------------------
 # App layout
 app.layout = html.Div([
     ##El titulo
-    dbc.Row(dbc.Col(html.H1("Tasa de Reproduccion - R"),
+    dbc.Row(dbc.Col(html.H1("Visualizacion de Datos COVID 19 en el Peru"),
+                        width={'size': 8, 'offset': 2},
+                    )
+            ),
+    dbc.Row(dbc.Col(html.H2("Tasa de Reproduccion - R"),
                         width={'size': 6, 'offset': 3},
                     ),
             ),
@@ -110,7 +117,7 @@ app.layout = html.Div([
             width=12, lg={'size': 8,  "offset": 0}
         )
         ]),
-    dbc.Row(dbc.Col(html.H1("Fallecidos - Fuente SINADEF"),
+    dbc.Row(dbc.Col(html.H2("Fallecidos - Fuente SINADEF"),
                         width={'size': 6, 'offset': 3},
                     ),
             ),
@@ -145,7 +152,7 @@ app.layout = html.Div([
           ]
       ),
     
-    dbc.Row(dbc.Col(html.H1("Situacion Ocupacional Hospitalaria - Fuente SUSALUD"),
+    dbc.Row(dbc.Col(html.H2("Situacion Ocupacional Hospitalaria - Fuente SUSALUD"),
                         width={'size': 8, 'offset': 2},
                     ),
             ),
@@ -183,7 +190,7 @@ app.layout = html.Div([
                       ),
           ]
       ),
-    dbc.Row(dbc.Col(html.H1("Vacunacion"),
+    dbc.Row(dbc.Col(html.H2("Vacunacion"),
                         width={'size': 4, 'offset': 4},
                     ),
             ),
